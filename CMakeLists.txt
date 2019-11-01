@@ -26,6 +26,8 @@ set(CMAKE_CXX_STANDARD 17)
 include(CheckIncludeFileCXX)
 include(CheckCXXSourceCompiles)
 
+find_package(Threads)
+
 include(cmake/build-flags.cmake)
 include(cmake/boost.cmake)
 include(cmake/stdc++fs.cmake)
@@ -47,3 +49,5 @@ if (${use_doxygen})
                 ALL)
     endif()
 endif()
+
+add_subdirectory(huffer)

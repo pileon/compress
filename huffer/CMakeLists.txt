@@ -16,7 +16,7 @@ set(SOURCE_FILES huffer.cpp)
 
 add_executable(huffer ${SOURCE_FILES})
 target_compile_definitions(huffer PRIVATE BOOST_LOG_DYN_LINK)
-target_compile_options(huffer PRIVATE ${COMPILER_OPTIONS} -Werror)
+target_compile_options(huffer PRIVATE ${COMPILER_OPTIONS} -Werror -Wno-error=unused-parameter)
 target_compile_features(huffer PRIVATE cxx_range_for)
 target_include_directories(huffer PRIVATE ${CMAKE_SOURCE_DIR}/src/include Boost::headers)
 target_link_libraries(huffer Threads::Threads Boost::program_options GCC::stdcxxfs)

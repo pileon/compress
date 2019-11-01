@@ -13,10 +13,64 @@
 // limitations under the License.
 
 #include <iostream>
+#include <fstream>
 
 // This program is to practice Huffman encoding
 
-int main(int argc [[maybe_unused]], char *argv[] [[maybe_unused]])
+void huffer(std::istream& input, std::ostream& output);
+
+int main(int argc, char *argv[])
 {
     std::cout << "Huffing and a puffing down on Venice Beach...\n";
+
+    // The program can be called in three different ways:
+    // 1. Without arguments, input is read from `std::cin` and output is written to `std::cout`
+    // 2. With one argument, which is the input file to read, and output is written to `std::cout`
+    // 3. With two arguments, which are the input and output files, respectively
+
+    if (argc == 1)
+    {
+        // No arguments, use standard input and output
+        huffer(std::cin, std::cout);
+    }
+    else if (argc == 2)
+    {
+        // One argument, naming the input file
+        std::ifstream input{argv[1]};
+        if (!input)
+        {
+            std::cerr << "Could not open open input file " << argv[1] << '\n';
+            return 1;
+        }
+
+        huffer(input, std::cout);
+    }
+    else if (argc == 3)
+    {
+        // Two arguments, naming the input and output files
+        std::ifstream input{argv[1]};
+        if (!input)
+        {
+            std::cerr << "Could not open open input file " << argv[1] << '\n';
+            return 1;
+        }
+
+        std::ofstream output{argv[2]};
+        if (!input)
+        {
+            std::cerr << "Could not open open output file " << argv[2] << '\n';
+            return 1;
+        }
+
+        huffer(input, output);
+    }
+    else
+    {
+        std::cerr << "Usage: huffer [input-file] [output-file]\n";
+    }
+}
+
+void huffer(std::istream& input, std::ostream& output)
+{
+
 }

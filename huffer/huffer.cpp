@@ -71,8 +71,32 @@ int main(int argc, char *argv[])
     }
 }
 
+struct node
+{
+    unsigned weight;
+    bool isleaf;  // True if this is a leaf node
+
+    union
+    {
+        struct
+        {
+            std::byte data;
+        } leaf;
+        struct
+        {
+            unsigned left;
+            unsigned right;
+        } interior;
+    };
+};
+
 void huffer(std::istream& input, std::ostream& output)
 {
     // Lets hope the input file is small enough to fit in memory, because we read it all into memory in one go
     std::vector<std::byte> in(std::istreambuf_iterator<std::byte>(input), std::istreambuf_iterator<std::byte>());
+
+    // Container of all nodes in the tree
+    std::vector<node> out;
+
+    // TODO: A vector which is used to transform the nodes into a tree
 }

@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 // This program is to practice Huffman encoding
 
@@ -72,5 +73,6 @@ int main(int argc, char *argv[])
 
 void huffer(std::istream& input, std::ostream& output)
 {
-
+    // Lets hope the input file is small enough to fit in memory, because we read it all into memory in one go
+    std::vector<std::byte> in(std::istreambuf_iterator<std::byte>(input), std::istreambuf_iterator<std::byte>());
 }

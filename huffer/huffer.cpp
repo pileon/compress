@@ -15,6 +15,9 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
+#include <unordered_map>
+#include <iterator>
 
 // This program is to practice Huffman encoding
 
@@ -80,7 +83,7 @@ struct node
     {
         struct
         {
-            std::byte data;
+            char data;
         } leaf;
         struct
         {
@@ -93,10 +96,28 @@ struct node
 void huffer(std::istream& input, std::ostream& output)
 {
     // Lets hope the input file is small enough to fit in memory, because we read it all into memory in one go
-    std::vector<std::byte> in(std::istreambuf_iterator<std::byte>(input), std::istreambuf_iterator<std::byte>());
+    std::vector<char> in((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
+
+    // Frequency table
+    std::unordered_map<char, unsigned> histogram;
+
+    for (auto const ch : in)
+        ++histogram[ch];
 
     // Container of all nodes in the tree
-    std::vector<node> out;
+    std::vector<node> nodes(histogram.size());
+
+    // Begin by adding all the leaves
+    std::transform(begin(histogram), end(histogram), begin(nodes), [](auto const& pair)
+    {
+        return node{ .weight = pair.second, .isleaf = true, .leaf = { pair.first }};
+    });
+
+    // Sort the leaf nodes
+    std::sort(begin(nodes), end(nodes), [](auto const& n1, auto const& n2)
+    {
+        return n1.weight < n2.weight;
+    });
 
     // TODO: A vector which is used to transform the nodes into a tree
 }

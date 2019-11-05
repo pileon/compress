@@ -18,6 +18,9 @@
 #include <algorithm>
 #include <unordered_map>
 #include <iterator>
+#include <sstream>
+#include <deque>
+#include <queue>
 
 // This program is to practice Huffman encoding
 
@@ -27,6 +30,11 @@ int main(int argc, char *argv[])
 {
     std::cout << "Huffing and a puffing down on Venice Beach...\n";
 
+#if 1
+    // For debugging purposes, use a fixed string
+    std::istringstream input("A_DEAD_DAD_CEDED_A_BAD_BABE_A_BEADED_ABACA_BED");
+    huffer(input, std::cout);
+#else
     // The program can be called in three different ways:
     // 1. Without arguments, input is read from `std::cin` and output is written to `std::cout`
     // 2. With one argument, which is the input file to read, and output is written to `std::cout`
@@ -72,12 +80,15 @@ int main(int argc, char *argv[])
     {
         std::cerr << "Usage: huffer [input-file] [output-file]\n";
     }
+#endif
+
 }
 
 struct node
 {
     unsigned weight;
     bool isleaf;  // True if this is a leaf node
+    unsigned index;  // Index in the collections of nodes
 
     union
     {
@@ -93,6 +104,19 @@ struct node
     };
 };
 
+std::ostream& operator<<(std::ostream& out, node const& n)
+{
+    if (n.isleaf)
+        return out << "{ " << n.weight << ", " << n.index << ", '" << n.leaf.data << "' }";
+    else
+        return out << "{ " << n.weight << ", " << n.index  << ", " << n.interior.left << ", " << n.interior.right << '}';
+}
+
+inline bool operator<(node const& n1, node const& n2)
+{
+    return n1.weight > n2.weight;
+}
+
 void huffer(std::istream& input, std::ostream& output)
 {
     // Lets hope the input file is small enough to fit in memory, because we read it all into memory in one go
@@ -105,19 +129,42 @@ void huffer(std::istream& input, std::ostream& output)
         ++histogram[ch];
 
     // Container of all nodes in the tree
-    std::vector<node> nodes(histogram.size());
+    std::deque<node> nodes;
 
     // Begin by adding all the leaves
-    std::transform(begin(histogram), end(histogram), begin(nodes), [](auto const& pair)
+    std::transform(begin(histogram), end(histogram), std::back_inserter(nodes), [&nodes](auto const& pair)
     {
-        return node{ .weight = pair.second, .isleaf = true, .leaf = { pair.first }};
+        return node{ .weight = pair.second, .isleaf = true, .index = static_cast<unsigned>(nodes.size()), .leaf = { pair.first }};
     });
 
-    // Sort the leaf nodes
-    std::sort(begin(nodes), end(nodes), [](auto const& n1, auto const& n2)
-    {
-        return n1.weight < n2.weight;
-    });
+    // Debug, print the nodes
+    std::cout << "Leaf nodes (not sorted):\n";
+    std::copy(begin(nodes), end(nodes), std::ostream_iterator<node>(std::cout, "\n"));
 
-    // TODO: A vector which is used to transform the nodes into a tree
+    // Now create the tree with all interior nodes
+    std::priority_queue<node> tree(begin(nodes), end(nodes));
+
+    while (tree.size() > 1)
+    {
+        auto first  = tree.top(); tree.pop();
+        auto second = tree.top(); tree.pop();
+
+        node n{ .weight = first.weight + second.weight,
+            .isleaf = false,
+            .index = static_cast<unsigned>(nodes.size()),
+            .interior = { .left = first.index, .right = second.index }
+        };
+
+        nodes.push_back(n);
+
+        tree.push(n);
+    }
+
+    // Debug, print the nodes
+    std::cout << "All nodes (not sorted):\n";
+    std::copy(begin(nodes), end(nodes), std::ostream_iterator<node>(std::cout, "\n"));
+
+    // node root = tree.top();
+
+    // Now walk the tree to create the binary left-right data
 }

@@ -89,6 +89,7 @@ struct node
     unsigned weight;
     bool isleaf;  // True if this is a leaf node
     unsigned index;  // Index in the collections of nodes
+    std::vector<bool> binary;  // Binary representation for the node (usable only for leaves)
 
     union
     {
@@ -117,6 +118,30 @@ inline bool operator<(node const& n1, node const& n2)
     return n1.weight > n2.weight;
 }
 
+void inorder_traverse(node& root, std::vector<bool> bin, std::deque<node>& nodes)
+{
+    if (root.isleaf)
+    {
+        root.binary = bin;
+    }
+    else
+    {
+        bin.push_back(false);
+        inorder_traverse(nodes[root.interior.left], bin, nodes);
+
+        bin.pop_back();
+
+        bin.push_back(true);
+        inorder_traverse(nodes[root.interior.right], bin, nodes);
+    }
+}
+
+void tree_to_binary(node& root, std::deque<node>& nodes)
+{
+    std::vector<bool> bin;
+    inorder_traverse(root, bin, nodes);
+}
+
 void huffer(std::istream& input, std::ostream& output)
 {
     // Lets hope the input file is small enough to fit in memory, because we read it all into memory in one go
@@ -134,7 +159,7 @@ void huffer(std::istream& input, std::ostream& output)
     // Begin by adding all the leaves
     std::transform(begin(histogram), end(histogram), std::back_inserter(nodes), [&nodes](auto const& pair)
     {
-        return node{ .weight = pair.second, .isleaf = true, .index = static_cast<unsigned>(nodes.size()), .leaf = { pair.first }};
+        return node{ .weight = pair.second, .isleaf = true, .index = static_cast<unsigned>(nodes.size()), .binary = {}, .leaf = { pair.first }};
     });
 
     // Debug, print the nodes
@@ -152,6 +177,7 @@ void huffer(std::istream& input, std::ostream& output)
         node n{ .weight = first.weight + second.weight,
             .isleaf = false,
             .index = static_cast<unsigned>(nodes.size()),
+            .binary = {},
             .interior = { .left = first.index, .right = second.index }
         };
 
@@ -164,7 +190,19 @@ void huffer(std::istream& input, std::ostream& output)
     std::cout << "All nodes (not sorted):\n";
     std::copy(begin(nodes), end(nodes), std::ostream_iterator<node>(std::cout, "\n"));
 
-    // node root = tree.top();
+    // Get the binary tree representation of all leaf nodes
+    node root = tree.top();
+    tree_to_binary(root, nodes);
 
-    // Now walk the tree to create the binary left-right data
+    // Debug, print the binary for each leaf
+    for (auto const& n : nodes)
+    {
+        if (n.isleaf)
+        {
+            std::cout << n.leaf.data << ": ";
+            for (auto b : n.binary)
+                std::cout << b;
+            std::cout << '\n';
+        }
+    }
 }

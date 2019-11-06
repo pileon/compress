@@ -142,6 +142,22 @@ void tree_to_binary(node& root, std::deque<node>& nodes)
     inorder_traverse(root, bin, nodes);
 }
 
+std::ostream& operator<<(std::ostream& os, std::vector<bool> const& bin)
+{
+    auto orig_flags = os.flags();
+
+    // Clear the boolalpha flag
+    os.flags(orig_flags & ~std::ios_base::boolalpha);
+
+    for (auto b : bin)
+        os << b;
+
+    // Set the original flags
+    os.flags(orig_flags);
+
+    return os;
+}
+
 void huffer(std::istream& input, std::ostream& output)
 {
     // Lets hope the input file is small enough to fit in memory, because we read it all into memory in one go
@@ -198,11 +214,35 @@ void huffer(std::istream& input, std::ostream& output)
     for (auto const& n : nodes)
     {
         if (n.isleaf)
-        {
-            std::cout << n.leaf.data << ": ";
-            for (auto b : n.binary)
-                std::cout << b;
-            std::cout << '\n';
-        }
+            std::cout << n.leaf.data << ": " << n.binary << '\n';
     }
+
+    // Now encode the input string using the nodes and the tree-traversal information in them:
+    std::unordered_map<char, std::vector<bool>> char_to_code;
+    for (auto const& n : nodes)
+    {
+        if (n.isleaf)
+            char_to_code[n.leaf.data] = n.binary;
+    }
+
+    // Debug, print the binary digits
+    for (auto c : in)
+    {
+        std::cout << char_to_code[c];
+    }
+    std::cout << '\n';
+
+    std::vector<bool> encoded;
+    for (auto c : in)
+    {
+        auto const& bin = char_to_code[c];
+        encoded.insert(end(encoded), begin(bin), end(bin));
+    }
+
+    // Debug, print the binary digits of the encoded data
+    for (auto b : encoded)
+    {
+        std::cout << b;
+    }
+    std::cout << '\n';
 }
